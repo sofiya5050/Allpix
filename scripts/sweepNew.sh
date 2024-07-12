@@ -13,7 +13,7 @@ SOURCEFILE="/cvmfs/clicdp.cern.ch/software/allpix-squared/3.0.3/x86_64-el9-gcc12
 for i in $(seq 0 8);
     do
 		source $SOURCEFILE
-        biasV=$((i*50))
+        biasV=$((i*300))
 			# Modifying bias voltage in CONF file
 		echo "Running python script to change CONF file."
         python confchange.py $CONFPATH $biasV
