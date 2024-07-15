@@ -216,8 +216,6 @@ langauFitReturn langaufit(TH1F *his, double fitrange[2], double* startvalues)
 	std::cout << "Fitting the Langau function to the histogram..." << std::endl;
 	his->Fit(FunName.c_str(), "RQ SAME");   // fit within specified range, use ParLimits, do not plot
 
-	ffit->Integral(fitrange[0], fitrange[1])  // Calculate area beneath curve
-
 	// Retrieve best fit parameters and errors
 	std::cout << "Retrieving best fit parameters..." << std::endl;
 	langauFitReturn l;
@@ -229,17 +227,19 @@ langauFitReturn langaufit(TH1F *his, double fitrange[2], double* startvalues)
 
 	double ChiSqr = ffit->GetChisquare();  // obtain chi^2
 	int ndf = ffit->GetNDF();           // obtain ndf
+	double integral = ffit->Integral(fitrange[0], fitrange[1]);  // Calculate area beneath curve
 
 	l.chiSqr = ChiSqr;
 	l.NDF = ndf;
 	l.fitFunc = ffit;
+	l.integral = integral
 
 	return l;
  
 }
 
 
-void writeToFile(std::string WriteFile, int biasV, int VFD, double fluence, double MPV, double MPV_err, double chi2){
+void writeToFile(std::string WriteFile, int biasV, int VFD, double fluence, double MPV, double MPV_err, double chi2, double integral){
 	// writes processed data to file
 
 	fstream csvFile(WriteFile.c_str());
@@ -259,7 +259,8 @@ void writeToFile(std::string WriteFile, int biasV, int VFD, double fluence, doub
                     << std::to_string(fluence) << ","
 					<< std::to_string(MPV) << ","
 					<< std::to_string(MPV_err) << ","
-					<< std::to_string(chi2);
+					<< std::to_string(chi2) << ","
+					<< std::to_string(integral);
             csvFile << "\n";
         }
         csvFile.close();
@@ -343,12 +344,14 @@ void processData(TFile *file, std::string detector, std::string CSVWriteFile, in
 	c2->SaveAs(name2.c_str());
 
 	double chi2 = l.chiSqr/((double) l.NDF);
+	double integral = l.integral
 	
 	std::cout << "Bias: " << biasV 
-			<< " V, VFD: " << VFD 
+			<< " V, Events: " << integral 
+			<< ", VFD: " << VFD 
 			<< " V, fluence: " << fluence 
 			<< ", MPV: (" <<  l.fitParams[1] << " ± " << l.fitErrors[1] << ")e, "
 			<< "Reduced chi^2: " << chi2 << ".\n" << std::endl;
 
-	writeToFile(CSVWriteFile, biasV, VFD, fluence, l.fitParams[1],  l.fitErrors[1], chi2);
+	writeToFile(CSVWriteFile, biasV, VFD, fluence, l.fitParams[1],  l.fitErrors[1], chi2, integral);
 }
