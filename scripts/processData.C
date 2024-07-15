@@ -216,6 +216,8 @@ langauFitReturn langaufit(TH1F *his, double fitrange[2], double* startvalues)
 	std::cout << "Fitting the Langau function to the histogram..." << std::endl;
 	his->Fit(FunName.c_str(), "RQ SAME");   // fit within specified range, use ParLimits, do not plot
 
+	ffit->Integral(fitrange[0], fitrange[1])  // Calculate area beneath curve
+
 	// Retrieve best fit parameters and errors
 	std::cout << "Retrieving best fit parameters..." << std::endl;
 	langauFitReturn l;
